@@ -113,7 +113,7 @@ export default function FilterPanel({ filters, onChange }: Props) {
               </span>
             )}
           </label>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 max-h-[338px] overflow-y-auto pr-1">
             {allLabels.map((l) => (
               <button
                 key={l.id}
