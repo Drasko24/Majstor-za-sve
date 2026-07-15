@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/petar/.nvm/versions/**)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose --version)",
+      "Bash(docker run *)",
+      "Read(//Users/petar/Library/Containers/com.docker.docker/Data/vms/**)",
+      "Bash(docker context *)",
+      "Bash(DOCKER_HOST=unix:///Users/petar/.docker/run/docker.sock docker run *)",
+      "Bash(docker info *)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|json|yml|sql|md\\)$\")",
+      "Bash(curl -s http://localhost:3000/api/categories)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s \"http://localhost:3000/api/providers?limit=1\")",
+      "Bash(curl -s \"http://localhost:3000/api/labels/suggest?q=slavin\")",
+      "Bash(curl -s http://localhost:5173)"
+    ]
+  }
+}

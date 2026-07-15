@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  PROVIDER
+  CLIENT
+  ADMIN
+}
+
+enum LabelStatus {
+  ACTIVE
+  PENDING
+  REJECTED
+}
+
+enum ModerationAction {
+  APPROVED
+  REJECTED
+  MERGED
+}
+
+enum ImageEntityType {
+  PROVIDER_GALLERY
+  PORTFOLIO
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(CLIENT)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  providerProfile  ProviderProfile?
+  reviewsWritten   Review[]           @relation("ClientReviews")
+  requestedLabels  Label[]
+  moderationLogs   LabelModerationLog[]
+
+  @@map("users")
+}
+
+model ProviderProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique @map("user_id")
+  displayName    String   @map("display_name")
+  bio            String?
+  yearsExperience Int?    @map("years_experience")
+  city           String
+  municipality   String?
+  phone          String?
+  phoneVisible   Boolean  @default(false) @map("phone_visible")
+  emailVisible   Boolean  @default(false) @map("email_visible")
+  isAvailable    Boolean  @default(true) @map("is_available")
+  avgRating      Decimal? @map("avg_rating") @db.Decimal(3, 2)
+  reviewCount    Int      @default(0) @map("review_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  labels         ProviderLabel[]
+  portfolioItems PortfolioItem[]
+  images         Image[]          @relation("ProviderGallery")
+  reviews        Review[]         @relation("ProviderReviews")
+
+  @@map("provider_profiles")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  parentId  Int?     @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parent     Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children   Category[] @relation("CategoryTree")
+  labels     Label[]
+
+  @@map("categories")
+}
+
+model Label {
+  id          Int         @id @default(autoincrement())
+  name        String
+  slug        String      @unique
+  description String?
+  categoryId  Int         @map("category_id")
+  status      LabelStatus @default(PENDING)
+  requestedBy String?     @map("requested_by")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  category        Category             @relation(fields: [categoryId], references: [id])
+  requester       User?                @relation(fields: [requestedBy], references: [id], onDelete: SetNull)
+  providers       ProviderLabel[]
+  moderationLogs  LabelModerationLog[]
+  mergedIntoLogs  LabelModerationLog[] @relation("MergedLabel")
+
+  @@map("labels")
+}
+
+model ProviderLabel {
+  providerId String @map("provider_id")
+  labelId    Int    @map("label_id")
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  label    Label           @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, labelId])
+  @@map("provider_labels")
+}
+
+model PortfolioItem {
+  id          Int      @id @default(autoincrement())
+  providerId  String   @map("provider_id")
+  title       String
+  description String?
+  year        Int?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  images   Image[]         @relation("PortfolioImages")
+
+  @@map("portfolio_items")
+}
+
+model Image {
+  id           Int             @id @default(autoincrement())
+  entityType   ImageEntityType @map("entity_type")
+  providerId   String?         @map("provider_id")
+  portfolioId  Int?            @map("portfolio_id")
+  url          String
+  displayOrder Int             @default(0) @map("display_order")
+  fileSize     Int?            @map("file_size")
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  provider  ProviderProfile? @relation("ProviderGallery", fields: [providerId], references: [id], onDelete: Cascade)
+  portfolio PortfolioItem?   @relation("PortfolioImages", fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@map("images")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  providerId String   @map("provider_id")
+  clientId   String   @map("client_id")
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  provider ProviderProfile @relation("ProviderReviews", fields: [providerId], references: [id], onDelete: Cascade)
+  client   User            @relation("ClientReviews", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, clientId])
+  @@map("reviews")
+}
+
+model LabelModerationLog {
+  id                 Int              @id @default(autoincrement())
+  labelId            Int              @map("label_id")
+  adminId            String           @map("admin_id")
+  action             ModerationAction
+  mergedWithLabelId  Int?             @map("merged_with_label_id")
+  note               String?
+  decidedAt          DateTime         @default(now()) @map("decided_at")
+
+  label          Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  admin          User   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  mergedWithLabel Label? @relation("MergedLabel", fields: [mergedWithLabelId], references: [id], onDelete: SetNull)
+
+  @@map("label_moderation_log")
+}
