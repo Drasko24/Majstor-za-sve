@@ -5,6 +5,7 @@ import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
 import rateLimit from '@fastify/rate-limit'
 
+import { prisma } from './common/prisma'
 import { authRoutes } from './modules/auth/auth.routes'
 import { categoryRoutes } from './modules/categories/categories.routes'
 import { labelRoutes } from './modules/labels/labels.routes'
@@ -41,6 +42,15 @@ async function bootstrap() {
   await server.register(adminRoutes, { prefix: '/api/admin' })
 
   server.get('/api/health', async () => ({ status: 'ok' }))
+
+  server.get('/api/stats', async (_req, reply) => {
+    const [providers, reviews, cities] = await Promise.all([
+      prisma.providerProfile.count(),
+      prisma.review.count(),
+      prisma.providerProfile.findMany({ select: { city: true }, distinct: ['city'] }),
+    ])
+    return reply.send({ providers, reviews, cities: cities.length })
+  })
 
   const port = Number(process.env.PORT ?? 3000)
   await server.listen({ port, host: '0.0.0.0' })

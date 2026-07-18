@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
+import Info from './pages/Info'
 
 // Wire up auth interceptor once, at module level
 setupApiAuth(
@@ -63,6 +64,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/info" element={<Info />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -29,6 +29,9 @@ export default function Navbar() {
           <Link to="/search" className="text-gray-600 hover:text-gray-900 text-sm">
             Pretraži majstore
           </Link>
+          <Link to="/info" className="text-gray-600 hover:text-gray-900 text-sm">
+            O platformi
+          </Link>
           {user ? (
             <>
               {user.role === 'PROVIDER' && (
@@ -84,6 +87,9 @@ export default function Navbar() {
         <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-3">
           <Link to="/search" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
             Pretraži majstore
+          </Link>
+          <Link to="/info" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
+            O platformi
           </Link>
           {user ? (
             <>
