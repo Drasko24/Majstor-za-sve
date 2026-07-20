@@ -58,6 +58,92 @@ export default function Info() {
           </p>
           <p className="mt-6 text-2xl font-bold text-red-600">Partizan Šampion - Vučiću pederu!</p>
         </div>
+
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Tim iza platforme</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-4xl">
+                👨‍💻
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-900">Petar Drašković</h3>
+                <p className="text-sm text-blue-600 font-medium mt-0.5">Co-founder &amp; DevOps / Infrastructure &amp; Developer</p>
+                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                  Odgovoran za infrastrukturu, deployment i razvoj platforme.
+                  Magistar informatike, Univerzitet Crne Gore.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full mt-2">
+                <a href="mailto:petar.draskovic@majstorzasve.me" className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  <span>✉️</span> petar.draskovic@majstorzasve.me
+                </a>
+                <a href="https://linkedin.com/in/petar-draskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  <span>🔗</span> linkedin.com/in/petar-draskovic
+                </a>
+                <a href="https://github.com/petar-draskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                  <span>🐙</span> github.com/petar-draskovic
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center text-4xl">
+                👨‍🔧
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-900">Aco Drašković</h3>
+                <p className="text-sm text-green-600 font-medium mt-0.5">Co-founder &amp; Full-stack Developer</p>
+                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                  Odgovoran za razvoj cjelokupnog sistema — od baze podataka do korisničkog interfejsa.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full mt-2">
+                <a href="mailto:aco.draskovic@majstorzasve.me" className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                  <span>✉️</span> aco.draskovic@majstorzasve.me
+                </a>
+                <a href="https://linkedin.com/in/aco-draskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                  <span>🔗</span> linkedin.com/in/aco-draskovic
+                </a>
+                <a href="https://github.com/aco-draskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                  <span>🐙</span> github.com/aco-draskovic
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center text-4xl">
+                ⚖️
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-gray-900">Milena Mijušković</h3>
+                <p className="text-sm text-pink-600 font-medium mt-0.5">Co-founder &amp; Pravni savjetnik</p>
+                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                  Odgovorna za pravne aspekte poslovanja, uslove korišćenja i usklađenost platforme sa zakonima.
+                  Diplomirani pravnik, Pravni fakultet Podgorica.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full mt-2">
+                <a href="mailto:milena.mijuskovic@majstorzasve.me" className="flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors">
+                  <span>✉️</span> milena.mijuskovic@majstorzasve.me
+                </a>
+                <a href="https://linkedin.com/in/milena-mijuskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors">
+                  <span>🔗</span> linkedin.com/in/milena-mijuskovic
+                </a>
+                <a href="https://behance.net/milenamijuskovic" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600 transition-colors">
+                  <span>🎨</span> behance.net/milenamijuskovic
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-gray-400 mt-8">
+            Za poslovne upite:{' '}
+            <a href="mailto:info@majstorzasve.me" className="text-blue-500 hover:underline">
+              info@majstorzasve.me
+            </a>
+          </p>
+        </div>
       </div>
     </Layout>
   )
