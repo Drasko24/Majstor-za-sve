@@ -1,1 +1,2 @@
 Ovo je sad iz dev branch-a test fajl.. 
+Uzimam njega da razrijesim konflikt.
