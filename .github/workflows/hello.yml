@@ -1,0 +1,25 @@
+name: Hello
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+
+jobs:
+  pozdrav:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ispiši poruku
+        run: echo "Workflow radi!"
+
+      - name: Kontekst
+        run: |
+          echo "Grana: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Pokrenuo: ${{ github.actor }}"
+
+      - name: Provjeri okruženje
+        run: |
+          node --version
+          npm --version
+          docker --version
