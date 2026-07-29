@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authApi } from '../api/auth'
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  isActive
+    ? 'text-blue-600 font-semibold text-sm'
+    : 'text-gray-600 hover:text-gray-900 text-sm'
+
+const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+  isActive ? 'text-sm text-blue-600 font-semibold' : 'text-sm text-gray-700'
 
 export default function Navbar() {
   const { user, logout } = useAuthStore()
@@ -26,26 +34,23 @@ export default function Navbar() {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/search" className="text-gray-600 hover:text-gray-900 text-sm">
+          <NavLink to="/search" className={navLinkClass}>
             Pretraži majstore
-          </Link>
-          <Link to="/info" className="text-gray-600 hover:text-gray-900 text-sm">
+          </NavLink>
+          <NavLink to="/info" className={navLinkClass}>
             O platformi
-          </Link>
+          </NavLink>
           {user ? (
             <>
               {user.role === 'PROVIDER' && (
-                <Link
-                  to="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 text-sm"
-                >
+                <NavLink to="/dashboard" className={navLinkClass}>
                   Dashboard
-                </Link>
+                </NavLink>
               )}
               {user.role === 'ADMIN' && (
-                <Link to="/admin" className="text-gray-600 hover:text-gray-900 text-sm">
+                <NavLink to="/admin" className={navLinkClass}>
                   Admin
-                </Link>
+                </NavLink>
               )}
               <span className="text-sm text-gray-500">{user.email}</span>
               <button
@@ -57,9 +62,9 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900">
+              <NavLink to="/login" className={navLinkClass}>
                 Prijava
-              </Link>
+              </NavLink>
               <Link
                 to="/register"
                 className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -85,18 +90,18 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-3">
-          <Link to="/search" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
+          <NavLink to="/search" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
             Pretraži majstore
-          </Link>
-          <Link to="/info" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
+          </NavLink>
+          <NavLink to="/info" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
             O platformi
-          </Link>
+          </NavLink>
           {user ? (
             <>
               {user.role === 'PROVIDER' && (
-                <Link to="/dashboard" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
+                <NavLink to="/dashboard" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
                   Dashboard
-                </Link>
+                </NavLink>
               )}
               <button onClick={handleLogout} className="text-sm text-red-600 text-left">
                 Odjava
@@ -104,9 +109,9 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
+              <NavLink to="/login" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
                 Prijava
-              </Link>
+              </NavLink>
               <Link to="/register" className="text-sm text-gray-700" onClick={() => setOpen(false)}>
                 Registracija
               </Link>
