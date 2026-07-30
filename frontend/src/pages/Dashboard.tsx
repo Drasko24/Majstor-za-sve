@@ -188,7 +188,7 @@ function ProfileTab({ profileId, profile }: { profileId: string; profile: { disp
   )
 }
 
-function GalleryTab({ profileId, images, galleryInputRef, onRefresh }: { profileId: string; images: { id: number; url: string }[]; galleryInputRef: React.RefObject<HTMLInputElement | null>; onRefresh: () => void }) {
+function GalleryTab({ profileId, images, galleryInputRef, onRefresh }: { profileId: string; images: { id: number; url: string }[]; galleryInputRef: React.RefObject<HTMLInputElement>; onRefresh: () => void }) {
   const [uploading, setUploading] = useState(false)
 
   const handleUpload = async (files: FileList | null) => {

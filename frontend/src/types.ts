@@ -58,6 +58,8 @@ export interface PortfolioItem {
 export interface ProviderDetail extends ProviderSummary {
   phone?: string | null
   email?: string | null
+  phoneVisible: boolean
+  emailVisible: boolean
   gallery: GalleryImage[]
   portfolio: PortfolioItem[]
 }
