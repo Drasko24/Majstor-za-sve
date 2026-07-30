@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { providersApi } from '../api/providers'
@@ -19,6 +19,33 @@ export default function Dashboard() {
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const profileId = user?.profileId
+  const isProvider = !!user && user.role === 'PROVIDER' && !!profileId
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['provider', profileId],
+    queryFn: async () => {
+      if (!profileId) throw new Error('Nedostaje profileId')
+      const res = await providersApi.getById(profileId)
+      return res.data
+    },
+    enabled: isProvider,
+  })
+
+  const { data: myLabels = [] } = useQuery({
+    queryKey: ['provider-labels', profileId],
+    queryFn: async () => {
+      if (!profileId) throw new Error('Nedostaje profileId')
+      const res = await providersApi.getLabels(profileId)
+      return res.data
+    },
+    enabled: isProvider,
+  })
+
+  useEffect(() => {
+    if (initialized && !isProvider) {
+      navigate('/login')
+    }
+  }, [initialized, isProvider, navigate])
 
   if (!initialized) {
     return (
@@ -32,19 +59,8 @@ export default function Dashboard() {
   }
 
   if (!user || user.role !== 'PROVIDER' || !profileId) {
-    navigate('/login')
     return null
   }
-
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['provider', profileId],
-    queryFn: () => providersApi.getById(profileId).then((r) => r.data),
-  })
-
-  const { data: myLabels = [] } = useQuery({
-    queryKey: ['provider-labels', profileId],
-    queryFn: () => providersApi.getLabels(profileId).then((r) => r.data),
-  })
 
   if (isLoading) {
     return (
@@ -172,7 +188,7 @@ function ProfileTab({ profileId, profile }: { profileId: string; profile: { disp
   )
 }
 
-function GalleryTab({ profileId, images, galleryInputRef, onRefresh }: { profileId: string; images: { id: number; url: string }[]; galleryInputRef: React.RefObject<HTMLInputElement | null>; onRefresh: () => void }) {
+function GalleryTab({ profileId, images, galleryInputRef, onRefresh }: { profileId: string; images: { id: number; url: string }[]; galleryInputRef: React.RefObject<HTMLInputElement>; onRefresh: () => void }) {
   const [uploading, setUploading] = useState(false)
 
   const handleUpload = async (files: FileList | null) => {
