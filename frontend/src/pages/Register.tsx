@@ -74,7 +74,7 @@ export default function Register() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             {role === 'PROVIDER' && (
               <>
                 <div>

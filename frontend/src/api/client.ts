@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { InternalAxiosRequestConfig } from 'axios'
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -32,7 +32,7 @@ let queue: Array<(token: string) => void> = []
 
 api.interceptors.response.use(
   (res) => res,
-  async (error) => {
+  async (error: AxiosError) => {
     const orig = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
     if (error.response?.status !== 401 || orig._retry) {
       return Promise.reject(error)
@@ -48,7 +48,9 @@ api.interceptors.response.use(
 
     refreshing = true
     try {
-      const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true })
+      const { data } = await axios.post<{ accessToken: string }>(
+        '/api/auth/refresh', {}, { withCredentials: true }
+      )
       _set(data.accessToken)
       queue.forEach((cb) => cb(data.accessToken))
       queue = []

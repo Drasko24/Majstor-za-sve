@@ -153,7 +153,7 @@ function LabelsTab() {
   const reject = useMutation({
     mutationFn: ({ id, note }: { id: number; note: string }) => adminApi.rejectLabel(id, note || undefined),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
+      void qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
       resetExpansion()
     },
   })
@@ -162,7 +162,7 @@ function LabelsTab() {
     mutationFn: ({ id, targetId }: { id: number; targetId: number }) =>
       adminApi.mergeLabel(id, targetId, note || undefined),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
+      void qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
       resetExpansion()
     },
   })
@@ -199,7 +199,7 @@ function LabelsTab() {
           onRejectConfirm={() => reject.mutate({ id: label.id, note })}
           onMergeConfirm={() => {
             if (!mergeTargetId) return alert('Odaberi ciljnu labelu')
-            merge.mutate({ id: label.id, targetId: mergeTargetId as number })
+            merge.mutate({ id: label.id, targetId: mergeTargetId })
           }}
           onCancel={resetExpansion}
           approving={approve.isPending}
