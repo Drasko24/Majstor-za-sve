@@ -47,7 +47,7 @@ function Delta({
 					)}
 					data-slot="delta"
 					variant="secondary"
-					{...(props as React.ComponentProps<typeof Badge>)}
+					{...(props)}
 				/>
 			) : (
 				<div

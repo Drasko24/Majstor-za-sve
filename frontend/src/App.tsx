@@ -44,7 +44,7 @@ export default function App() {
         setInitialized(true)
       }
     }
-    init()
+    void init()
   }, [login, setInitialized])
 
   if (!initialized) {

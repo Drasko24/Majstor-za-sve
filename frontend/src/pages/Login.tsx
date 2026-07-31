@@ -49,7 +49,7 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input

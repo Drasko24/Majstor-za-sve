@@ -33,8 +33,8 @@ export default function ProviderProfile() {
   const submitReview = useMutation({
     mutationFn: () => reviewsApi.create(id!, { rating, comment: comment || undefined }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews', id] })
-      queryClient.invalidateQueries({ queryKey: ['provider', id] })
+      void queryClient.invalidateQueries({ queryKey: ['reviews', id] })
+      void queryClient.invalidateQueries({ queryKey: ['provider', id] })
       setComment('')
       setRating(5)
     },

@@ -162,6 +162,8 @@ export async function providerRoutes(app: FastifyInstance) {
       isAvailable: profile.isAvailable,
       phone: profile.phoneVisible ? profile.phone : null,
       email: profile.emailVisible ? profile.user.email : null,
+      phoneVisible: profile.phoneVisible,
+      emailVisible: profile.emailVisible,
       labels: profile.labels.map((l) => l.label),
       gallery: profile.images,
       portfolio: profile.portfolioItems,

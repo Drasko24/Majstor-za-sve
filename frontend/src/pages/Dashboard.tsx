@@ -106,14 +106,14 @@ export default function Dashboard() {
             profileId={profileId}
             images={profile.gallery}
             galleryInputRef={galleryInputRef}
-            onRefresh={() => queryClient.invalidateQueries({ queryKey: ['provider', profileId] })}
+            onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['provider', profileId] })}
           />
         )}
         {tab === 'portfolio' && profile && (
-          <PortfolioTab profileId={profileId} portfolio={profile.portfolio} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['provider', profileId] })} />
+          <PortfolioTab profileId={profileId} portfolio={profile.portfolio} onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['provider', profileId] })} />
         )}
         {tab === 'usluge' && (
-          <LabelsTab profileId={profileId} myLabels={myLabels} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['provider-labels', profileId] })} />
+          <LabelsTab profileId={profileId} myLabels={myLabels} onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['provider-labels', profileId] })} />
         )}
       </div>
     </Layout>
@@ -140,7 +140,7 @@ function ProfileTab({ profileId, profile }: { profileId: string; profile: { disp
   const update = useMutation({
     mutationFn: () => providersApi.update(profileId, { ...form, yearsExperience: form.yearsExperience ? Number(form.yearsExperience) : undefined }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['provider', profileId] })
+      void qc.invalidateQueries({ queryKey: ['provider', profileId] })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     },
@@ -221,9 +221,9 @@ function GalleryTab({ profileId, images, galleryInputRef, onRefresh }: { profile
         >
           {uploading ? 'Upload...' : '+ Dodaj slike'}
         </button>
-        <input ref={galleryInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => handleUpload(e.target.files)} />
+        <input ref={galleryInputRef} type="file" accept="image/*" multiple hidden onChange={(e) => void handleUpload(e.target.files)} />
       </div>
-      <ImageGallery images={images} onDelete={deleteImage} />
+      <ImageGallery images={images} onDelete={(imageId) => void deleteImage(imageId)} />
     </div>
   )
 }
@@ -265,7 +265,7 @@ function PortfolioTab({ profileId, portfolio, onRefresh }: { profileId: string; 
               {item.year && <p className="text-xs text-gray-400">{item.year}.</p>}
               {item.description && <p className="text-sm text-gray-600 mt-1">{item.description}</p>}
             </div>
-            <button onClick={() => deleteItem(item.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Obriši</button>
+            <button onClick={() => void deleteItem(item.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Obriši</button>
           </div>
           <ImageGallery images={item.images} />
           <button
@@ -277,7 +277,7 @@ function PortfolioTab({ profileId, portfolio, onRefresh }: { profileId: string; 
           <input
             type="file" accept="image/*" multiple hidden
             ref={(el) => { fileInputRefs.current[item.id] = el }}
-            onChange={(e) => uploadImages(item.id, e.target.files)}
+            onChange={(e) => void uploadImages(item.id, e.target.files)}
           />
         </div>
       ))}
@@ -346,7 +346,7 @@ function LabelsTab({ profileId, myLabels, onRefresh }: { profileId: string; myLa
             {myLabels.map((l) => (
               <span key={l.id} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
                 {l.name}
-                <button onClick={() => removeLabel(l.id)} className="ml-1 text-blue-400 hover:text-blue-700 font-bold leading-none">×</button>
+                <button onClick={() => void removeLabel(l.id)} className="ml-1 text-blue-400 hover:text-blue-700 font-bold leading-none">×</button>
               </span>
             ))}
           </div>
@@ -368,7 +368,7 @@ function LabelsTab({ profileId, myLabels, onRefresh }: { profileId: string; myLa
             {available.slice(0, 20).map((l) => (
               <button
                 key={l.id}
-                onClick={() => addLabel(l)}
+                onClick={() => void addLabel(l)}
                 className="text-sm bg-gray-50 border border-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
               >
                 + {l.name}
@@ -385,7 +385,7 @@ function LabelsTab({ profileId, myLabels, onRefresh }: { profileId: string; myLa
         <p className="text-xs text-gray-400 mb-3">
           Ako vaša usluga nije u katalogu, predložite je — admin će je pregledati.
         </p>
-        <LabelSuggest onSelect={addLabel} />
+        <LabelSuggest onSelect={(label) => void addLabel(label)} />
       </div>
     </div>
   )

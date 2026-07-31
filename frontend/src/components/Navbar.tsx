@@ -54,7 +54,7 @@ export default function Navbar() {
               )}
               <span className="text-sm text-gray-500">{user.email}</span>
               <button
-                onClick={handleLogout}
+                onClick={() => void handleLogout()}
                 className="text-sm text-red-600 hover:text-red-700"
               >
                 Odjava
@@ -103,7 +103,7 @@ export default function Navbar() {
                   Dashboard
                 </NavLink>
               )}
-              <button onClick={handleLogout} className="text-sm text-red-600 text-left">
+              <button onClick={() => void handleLogout()} className="text-sm text-red-600 text-left">
                 Odjava
               </button>
             </>
