@@ -11,6 +11,7 @@ import { categoryRoutes } from './modules/categories/categories.routes'
 import { labelRoutes } from './modules/labels/labels.routes'
 import { providerRoutes } from './modules/providers/providers.routes'
 import { reviewRoutes } from './modules/reviews/reviews.routes'
+import { requestRoutes } from './modules/requests/requests.routes'
 import { adminRoutes } from './modules/admin/admin.routes'
 
 /**
@@ -43,6 +44,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(labelRoutes, { prefix: '/api/labels' })
   await app.register(providerRoutes, { prefix: '/api/providers' })
   await app.register(reviewRoutes, { prefix: '/api' })
+  await app.register(requestRoutes, { prefix: '/api/requests' })
   await app.register(adminRoutes, { prefix: '/api/admin' })
 
   app.get('/api/health', async () => ({ status: 'ok' }))

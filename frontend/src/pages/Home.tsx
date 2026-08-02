@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { categoriesApi } from '../api/categories'
+import { requestsApi } from '../api/requests'
 import Layout from '../components/Layout'
+import RequestCard from '../components/RequestCard'
 
 export default function Home() {
   const [q, setQ] = useState('')
@@ -12,6 +14,12 @@ export default function Home() {
     queryKey: ['categories'],
     queryFn: () => categoriesApi.list().then((r) => r.data),
     staleTime: Infinity,
+  })
+
+  const { data: latestRequests } = useQuery({
+    queryKey: ['requests', 'home'],
+    queryFn: () => requestsApi.list({ limit: 3, sort: 'newest' }).then((r) => r.data),
+    staleTime: 60_000,
   })
 
   const handleSearch = (e: React.FormEvent) => {
@@ -63,6 +71,14 @@ export default function Home() {
               Traži
             </button>
           </form>
+
+          <p className="text-blue-200 text-sm mt-6">
+            Ne znate koga da tražite?{' '}
+            <Link to="/requests/new" className="text-white font-semibold underline underline-offset-4">
+              Opišite šta vam treba
+            </Link>{' '}
+            i majstori će se javiti sami.
+          </p>
         </div>
       </section>
 
@@ -83,6 +99,39 @@ export default function Home() {
             </button>
           ))}
         </div>
+      </section>
+
+      {/* Najnoviji zahtjevi */}
+      <section className="max-w-6xl mx-auto px-4 pb-12">
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Zahtjevi klijenata</h2>
+            <p className="text-sm text-gray-500">
+              Ljudi opisuju šta im treba — od izrade kuhinje do kupovine alata.
+            </p>
+          </div>
+          <Link to="/requests" className="text-sm text-blue-600 font-medium hover:underline shrink-0">
+            Svi zahtjevi →
+          </Link>
+        </div>
+
+        {latestRequests && latestRequests.data.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {latestRequests.data.map((r) => (
+              <RequestCard key={r.id} request={r} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white border border-dashed border-gray-200 rounded-xl py-10 text-center">
+            <p className="text-gray-500 text-sm">Još nema objavljenih zahtjeva.</p>
+            <Link
+              to="/requests/new"
+              className="inline-block mt-3 text-sm text-blue-600 font-medium hover:underline"
+            >
+              Objavite prvi →
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* CTA */}

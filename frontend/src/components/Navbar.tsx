@@ -37,11 +37,17 @@ export default function Navbar() {
           <NavLink to="/search" className={navLinkClass}>
             Pretraži majstore
           </NavLink>
+          <NavLink to="/requests" className={navLinkClass}>
+            Zahtjevi
+          </NavLink>
           <NavLink to="/info" className={navLinkClass}>
             O platformi
           </NavLink>
           {user ? (
             <>
+              <NavLink to="/my-requests" className={navLinkClass}>
+                Moji zahtjevi
+              </NavLink>
               {user.role === 'PROVIDER' && (
                 <NavLink to="/dashboard" className={navLinkClass}>
                   Dashboard
@@ -93,11 +99,17 @@ export default function Navbar() {
           <NavLink to="/search" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
             Pretraži majstore
           </NavLink>
+          <NavLink to="/requests" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
+            Zahtjevi
+          </NavLink>
           <NavLink to="/info" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
             O platformi
           </NavLink>
           {user ? (
             <>
+              <NavLink to="/my-requests" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
+                Moji zahtjevi
+              </NavLink>
               {user.role === 'PROVIDER' && (
                 <NavLink to="/dashboard" className={mobileNavLinkClass} onClick={() => setOpen(false)}>
                   Dashboard

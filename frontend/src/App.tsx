@@ -13,6 +13,11 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 import Info from './pages/Info'
+import Requests from './pages/Requests'
+import RequestDetail from './pages/RequestDetail'
+import RequestNew from './pages/RequestNew'
+import RequestEdit from './pages/RequestEdit'
+import MyRequests from './pages/MyRequests'
 
 // Wire up auth interceptor once, at module level
 setupApiAuth(
@@ -60,6 +65,11 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/search" element={<Search />} />
       <Route path="/providers/:id" element={<ProviderProfile />} />
+      <Route path="/requests" element={<Requests />} />
+      <Route path="/requests/new" element={<RequestNew />} />
+      <Route path="/requests/:id" element={<RequestDetail />} />
+      <Route path="/requests/:id/edit" element={<RequestEdit />} />
+      <Route path="/my-requests" element={<MyRequests />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
