@@ -29,6 +29,27 @@ enum ModerationAction {
 enum ImageEntityType {
   PROVIDER_GALLERY
   PORTFOLIO
+  REQUEST
+}
+
+/// SERVICE = treba mi da se odradi posao; PURCHASE = trazim da kupim artikal.
+enum RequestType {
+  SERVICE
+  PURCHASE
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
 }
 
 model User {
@@ -43,6 +64,7 @@ model User {
   reviewsWritten   Review[]           @relation("ClientReviews")
   requestedLabels  Label[]
   moderationLogs   LabelModerationLog[]
+  jobRequests      JobRequest[]       @relation("AuthoredRequests")
 
   @@map("users")
 }
@@ -69,6 +91,7 @@ model ProviderProfile {
   portfolioItems PortfolioItem[]
   images         Image[]          @relation("ProviderGallery")
   reviews        Review[]         @relation("ProviderReviews")
+  offers         Offer[]
 
   @@map("provider_profiles")
 }
@@ -80,9 +103,10 @@ model Category {
   parentId  Int?     @map("parent_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  parent     Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children   Category[] @relation("CategoryTree")
-  labels     Label[]
+  parent      Category?    @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[]   @relation("CategoryTree")
+  labels      Label[]
+  jobRequests JobRequest[]
 
   @@map("categories")
 }
@@ -102,6 +126,7 @@ model Label {
   providers       ProviderLabel[]
   moderationLogs  LabelModerationLog[]
   mergedIntoLogs  LabelModerationLog[] @relation("MergedLabel")
+  jobRequests     RequestLabel[]
 
   @@map("labels")
 }
@@ -136,13 +161,15 @@ model Image {
   entityType   ImageEntityType @map("entity_type")
   providerId   String?         @map("provider_id")
   portfolioId  Int?            @map("portfolio_id")
+  requestId    Int?            @map("request_id")
   url          String
   displayOrder Int             @default(0) @map("display_order")
   fileSize     Int?            @map("file_size")
   createdAt    DateTime        @default(now()) @map("created_at")
 
-  provider  ProviderProfile? @relation("ProviderGallery", fields: [providerId], references: [id], onDelete: Cascade)
-  portfolio PortfolioItem?   @relation("PortfolioImages", fields: [portfolioId], references: [id], onDelete: Cascade)
+  provider   ProviderProfile? @relation("ProviderGallery", fields: [providerId], references: [id], onDelete: Cascade)
+  portfolio  PortfolioItem?   @relation("PortfolioImages", fields: [portfolioId], references: [id], onDelete: Cascade)
+  jobRequest JobRequest?      @relation("RequestImages", fields: [requestId], references: [id], onDelete: Cascade)
 
   @@map("images")
 }
@@ -176,4 +203,67 @@ model LabelModerationLog {
   mergedWithLabel Label? @relation("MergedLabel", fields: [mergedWithLabelId], references: [id], onDelete: SetNull)
 
   @@map("label_moderation_log")
+}
+
+/// Oglas koji postavlja narucilac: "treba mi kuhinja" (SERVICE) ili
+/// "trazim da kupim macbook" (PURCHASE). Majstori/prodavci salju ponude.
+model JobRequest {
+  id             Int           @id @default(autoincrement())
+  authorId       String        @map("author_id")
+  type           RequestType   @default(SERVICE)
+  title          String
+  description    String
+  categoryId     Int?          @map("category_id")
+  city           String
+  municipality   String?
+  budgetMin      Decimal?      @map("budget_min") @db.Decimal(10, 2)
+  budgetMax      Decimal?      @map("budget_max") @db.Decimal(10, 2)
+  deadline       DateTime?     @db.Date
+  contactPhone   String?       @map("contact_phone")
+  contactVisible Boolean       @default(true) @map("contact_visible")
+  status         RequestStatus @default(OPEN)
+  viewCount      Int           @default(0) @map("view_count")
+  offerCount     Int           @default(0) @map("offer_count")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  author   User           @relation("AuthoredRequests", fields: [authorId], references: [id], onDelete: Cascade)
+  category Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  labels   RequestLabel[]
+  images   Image[]        @relation("RequestImages")
+  offers   Offer[]
+
+  @@index([status, createdAt])
+  @@index([city])
+  @@map("requests")
+}
+
+model RequestLabel {
+  requestId Int @map("request_id")
+  labelId   Int @map("label_id")
+
+  jobRequest JobRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  label      Label      @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([requestId, labelId])
+  @@map("request_labels")
+}
+
+/// Ponuda majstora na oglas. Jedan majstor - jedna ponuda po oglasu.
+model Offer {
+  id         Int         @id @default(autoincrement())
+  requestId  Int         @map("request_id")
+  providerId String      @map("provider_id")
+  price      Decimal?    @db.Decimal(10, 2)
+  message    String
+  daysToDone Int?        @map("days_to_done")
+  status     OfferStatus @default(PENDING)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  jobRequest JobRequest      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, providerId])
+  @@map("offers")
 }

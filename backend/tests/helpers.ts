@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import { FastifyInstance } from 'fastify'
-import { Role } from '@prisma/client'
+import { Role, RequestStatus, RequestType } from '@prisma/client'
 import { buildApp } from '../src/app'
 import { prisma } from '../src/common/prisma'
 
@@ -34,7 +34,10 @@ export async function resetDb() {
   assertTestDatabase()
   await prisma.labelModerationLog.deleteMany()
   await prisma.review.deleteMany()
+  await prisma.offer.deleteMany()
+  await prisma.requestLabel.deleteMany()
   await prisma.image.deleteMany()
+  await prisma.jobRequest.deleteMany()
   await prisma.portfolioItem.deleteMany()
   await prisma.providerLabel.deleteMany()
   await prisma.label.deleteMany()
@@ -89,6 +92,33 @@ export async function makeProvider(opts: {
     },
   })
   return { user, profile }
+}
+
+export async function makeJobRequest(
+  authorId: string,
+  opts: {
+    type?: RequestType
+    title?: string
+    description?: string
+    city?: string
+    status?: RequestStatus
+    contactPhone?: string
+    contactVisible?: boolean
+  } = {}
+) {
+  return prisma.jobRequest.create({
+    data: {
+      authorId,
+      type: opts.type ?? RequestType.SERVICE,
+      title: opts.title ?? 'Treba mi kuhinja po mjeri',
+      description:
+        opts.description ?? 'Potrebna izrada kuhinje po mjeri, duzina 3.2m, sa ugradnim elementima.',
+      city: opts.city ?? 'Podgorica',
+      status: opts.status ?? RequestStatus.OPEN,
+      contactPhone: opts.contactPhone ?? '069111222',
+      contactVisible: opts.contactVisible ?? true,
+    },
+  })
 }
 
 /** Potpisuje token istim kljucem koji aplikacija koristi. */

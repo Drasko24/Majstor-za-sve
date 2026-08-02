@@ -72,6 +72,82 @@ export interface Review {
   client: { id: string; email: string }
 }
 
+export type RequestType = 'SERVICE' | 'PURCHASE'
+export type RequestStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'
+export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN'
+
+export interface JobRequestSummary {
+  id: number
+  type: RequestType
+  title: string
+  description: string
+  city: string
+  municipality?: string | null
+  budgetMin?: string | number | null
+  budgetMax?: string | number | null
+  deadline?: string | null
+  status: RequestStatus
+  viewCount: number
+  offerCount: number
+  createdAt: string
+  category?: { id: number; name: string; slug: string } | null
+  labels: Label[]
+  coverImage?: string | null
+  imageCount: number
+}
+
+export interface JobRequestDetail
+  extends Omit<JobRequestSummary, 'coverImage' | 'imageCount'> {
+  images: GalleryImage[]
+  contactVisible: boolean
+  contactPhone?: string | null
+  author: { id: string; email: string | null }
+  isOwner: boolean
+  myOffer: Offer | null
+}
+
+export interface Offer {
+  id: number
+  requestId: number
+  providerId: string
+  price?: string | number | null
+  message: string
+  daysToDone?: number | null
+  status: OfferStatus
+  createdAt: string
+}
+
+export interface OfferWithProvider extends Offer {
+  provider: {
+    id: string
+    displayName: string
+    city: string
+    avgRating?: number | null
+    reviewCount: number
+    phone: string | null
+    phoneVisible: boolean
+  }
+}
+
+export interface OfferWithRequest extends Offer {
+  jobRequest: JobRequestSummary
+}
+
+export interface JobRequestInput {
+  type: RequestType
+  title: string
+  description: string
+  categoryId?: number | null
+  labelIds?: number[]
+  city: string
+  municipality?: string
+  budgetMin?: number | null
+  budgetMax?: number | null
+  deadline?: string | null
+  contactPhone?: string
+  contactVisible: boolean
+}
+
 export interface PaginationMeta {
   total: number
   page: number

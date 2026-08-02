@@ -1,5 +1,6 @@
 import { PrismaClient, Role, LabelStatus, ImageEntityType } from '@prisma/client'
 import bcrypt from 'bcrypt'
+import { seedRequests } from './requests-seed'
 
 const prisma = new PrismaClient()
 
@@ -1352,6 +1353,9 @@ async function main() {
   console.log('🧹 Čišćenje baze...')
   await prisma.labelModerationLog.deleteMany({})
   await prisma.review.deleteMany({})
+  await prisma.offer.deleteMany({})
+  await prisma.requestLabel.deleteMany({})
+  await prisma.jobRequest.deleteMany({})
   await prisma.image.deleteMany({})
   await prisma.portfolioItem.deleteMany({})
   await prisma.providerLabel.deleteMany({})
@@ -1528,6 +1532,11 @@ async function main() {
     })
   }
 
+  // ─── Zahtjevi + ponude ────────────────────────────────────────────
+  console.log('📋 Zahtjevi klijenata...')
+  const requestStats = await seedRequests(prisma)
+  console.log(`  ✓ ${requestStats.created} zahtjeva, ${requestStats.offers} ponuda\n`)
+
   // ─── Summary ──────────────────────────────────────────────────────
   const totalImages = await prisma.image.count()
   const totalPortfolio = await prisma.portfolioItem.count()
@@ -1539,8 +1548,9 @@ async function main() {
   console.log(`   Labele:         ${activeCount} aktivnih + ${PENDING_LABELS.length} na čekanju`)
   console.log(`   Majstori:       ${PROVIDERS.length}`)
   console.log(`   Portfolio:      ${totalPortfolio} stavki`)
-  console.log(`   Slike:          ${totalImages} (galerija + portfolio)`)
+  console.log(`   Slike:          ${totalImages} (galerija + portfolio + zahtjevi)`)
   console.log(`   Recenzije:      ${reviewCount}`)
+  console.log(`   Zahtjevi:       ${requestStats.created} (${requestStats.offers} ponuda)`)
   console.log('')
   console.log('🔑 Login podaci:')
   console.log('')
