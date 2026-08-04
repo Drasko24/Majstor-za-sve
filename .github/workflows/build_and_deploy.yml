@@ -67,7 +67,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [self-hosted, majstor]        # labela tvog runnera
+    runs-on: [self-hosted, petar_docker.local.2bi]        # labela tvog runnera
     environment:
       name: staging
 
