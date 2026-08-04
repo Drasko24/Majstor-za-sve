@@ -1,16 +1,23 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Lock, Mail, MapPin, User, UserRound, Wrench } from 'lucide-react'
 import { authApi } from '../api/auth'
 import { useAuthStore } from '../stores/authStore'
-import Layout from '../components/Layout'
+import AuthShell, { AuthError, AuthSubmit, authLinkClass } from '../components/AuthShell'
+import AuthField from '../components/AuthField'
+
+type Role = 'CLIENT' | 'PROVIDER'
+
+const ROLES: { value: Role; label: string; desc: string; icon: typeof UserRound }[] = [
+  { value: 'CLIENT', label: 'Klijent', desc: 'Tražim majstora', icon: UserRound },
+  { value: 'PROVIDER', label: 'Majstor', desc: 'Nudim usluge', icon: Wrench },
+]
 
 export default function Register() {
   const navigate = useNavigate()
   const { login } = useAuthStore()
   const [params] = useSearchParams()
-  const [role, setRole] = useState<'CLIENT' | 'PROVIDER'>(
-    params.get('role') === 'PROVIDER' ? 'PROVIDER' : 'CLIENT'
-  )
+  const [role, setRole] = useState<Role>(params.get('role') === 'PROVIDER' ? 'PROVIDER' : 'CLIENT')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -40,104 +47,137 @@ export default function Register() {
     }
   }
 
-  return (
-    <Layout>
-      <div className="min-h-[70vh] flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Registracija</h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Već imate nalog?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Prijavite se
-            </Link>
-          </p>
+  const isProvider = role === 'PROVIDER'
 
-          {/* Role toggle */}
-          <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-5">
-            {(['CLIENT', 'PROVIDER'] as const).map((r) => (
+  return (
+    <AuthShell
+      title="Kreirajte nalog"
+      subtitle={
+        <>
+          Već imate nalog?{' '}
+          <Link to="/login" className={authLinkClass}>
+            Prijavite se
+          </Link>
+        </>
+      }
+      asideTitle={isProvider ? 'Nađite posao u svom gradu.' : 'Nađite majstora za svaki posao.'}
+      asideText={
+        isProvider
+          ? 'Napravite profil, izlistajte usluge koje nudite i javljajte se na zahtjeve klijenata.'
+          : 'Opišite šta vam treba i primite ponude od provjerenih majstora iz vaše okoline.'
+      }
+      bullets={
+        isProvider
+          ? [
+              'Profil je besplatan, bez provizije',
+              'Zahtjevi klijenata iz vašeg grada',
+              'Ocjene i recenzije grade povjerenje',
+            ]
+          : [
+              'Jedan zahtjev — više ponuda',
+              'Provjerene ocjene i recenzije',
+              'Kontakt direktno sa majstorom',
+            ]
+      }
+    >
+      {error && <AuthError message={error} />}
+
+      {/* Izbor uloge mijenja i polja u formi, pa stoji prvi. */}
+      <fieldset className="mb-5">
+        <legend className="mb-2 text-sm font-medium text-slate-700">Registrujem se kao</legend>
+        <div role="radiogroup" aria-label="Registrujem se kao" className="grid grid-cols-2 gap-3">
+          {ROLES.map(({ value, label, desc, icon: Icon }) => {
+            const selected = role === value
+            return (
               <button
-                key={r}
+                key={value}
                 type="button"
-                onClick={() => setRole(r)}
-                className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                  role === r ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setRole(value)}
+                className={`flex flex-col items-start gap-2 rounded-2xl border p-3.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                  selected
+                    ? 'border-blue-500 bg-blue-50/60 ring-1 ring-blue-500'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                {r === 'CLIENT' ? 'Klijent' : 'Majstor'}
+                <span
+                  className={`grid h-9 w-9 place-items-center rounded-xl transition-colors ${
+                    selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
+                </span>
+                <span>
+                  <span
+                    className={`block text-sm font-semibold ${selected ? 'text-blue-700' : 'text-slate-800'}`}
+                  >
+                    {label}
+                  </span>
+                  <span className="block text-xs text-slate-500">{desc}</span>
+                </span>
               </button>
-            ))}
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-            {role === 'PROVIDER' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ime i prezime
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grad</label>
-                  <input
-                    type="text"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="npr. Podgorica"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Lozinka <span className="text-gray-400 font-normal">(min 8 znakova)</span>
-              </label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 mt-2"
-            >
-              {loading ? 'Registrovanje...' : 'Registruj se'}
-            </button>
-          </form>
+            )
+          })}
         </div>
-      </div>
-    </Layout>
+      </fieldset>
+
+      <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+        {isProvider && (
+          <div className="animate-menu-in flex flex-col gap-4">
+            <AuthField
+              label="Ime i prezime"
+              icon={User}
+              type="text"
+              required
+              autoComplete="name"
+              placeholder="npr. Marko Marković"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
+            <AuthField
+              label="Grad"
+              icon={MapPin}
+              type="text"
+              required
+              autoComplete="address-level2"
+              placeholder="npr. Podgorica"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            />
+          </div>
+        )}
+
+        <AuthField
+          label="Email"
+          icon={Mail}
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="vas@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <AuthField
+          label="Lozinka"
+          icon={Lock}
+          type="password"
+          required
+          minLength={8}
+          autoComplete="new-password"
+          placeholder="••••••••"
+          hint="Najmanje 8 znakova."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <AuthSubmit loading={loading} label="Registruj se" loadingLabel="Registrovanje..." />
+
+        <p className="text-center text-xs leading-relaxed text-slate-400">
+          Registracijom prihvatate uslove korišćenja platforme.
+        </p>
+      </form>
+    </AuthShell>
   )
 }

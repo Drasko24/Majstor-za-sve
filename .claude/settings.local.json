@@ -18,5 +18,19 @@
       "Bash(curl -s \"http://localhost:3000/api/labels/suggest?q=slavin\")",
       "Bash(curl -s http://localhost:5173)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.13/bin/headroom wrap selfheal --marker headroom-wrap-selfheal",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

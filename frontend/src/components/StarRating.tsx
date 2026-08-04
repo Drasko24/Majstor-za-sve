@@ -1,26 +1,33 @@
+import { Star } from 'lucide-react'
+
 interface Props {
-  value: number
+  /** API salje Decimal kao string ("4.8"), pa primamo oba oblika. */
+  value: number | string | null
   max?: number
   onChange?: (v: number) => void
   size?: 'sm' | 'md' | 'lg'
 }
 
-const sizes = { sm: 'text-base', md: 'text-xl', lg: 'text-2xl' }
+const sizes = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-6 w-6' }
 
 export default function StarRating({ value, max = 5, onChange, size = 'md' }: Props) {
+  const rating = Number(value) || 0
+
   return (
-    <span className={`inline-flex gap-0.5 ${sizes[size]}`}>
+    <span className="inline-flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => {
-        const filled = i < Math.round(value)
+        const filled = i < Math.round(rating)
         return (
           <button
             key={i}
             type="button"
             onClick={() => onChange?.(i + 1)}
-            className={`${filled ? 'text-yellow-400' : 'text-gray-300'} ${onChange ? 'cursor-pointer hover:text-yellow-300' : 'cursor-default'}`}
+            className={`${onChange ? 'cursor-pointer transition-transform hover:scale-110' : 'cursor-default'} ${
+              filled ? 'text-amber-400' : 'text-slate-200'
+            }`}
             aria-label={`${i + 1} zvjezdica`}
           >
-            ★
+            <Star className={`${sizes[size]} fill-current`} strokeWidth={0} />
           </button>
         )
       })}

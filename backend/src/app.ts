@@ -47,6 +47,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(requestRoutes, { prefix: '/api/requests' })
   await app.register(adminRoutes, { prefix: '/api/admin' })
 
+  app.get('/health', async () => ({ status: 'ok' }))
   app.get('/api/health', async () => ({ status: 'ok' }))
 
   app.get('/api/stats', async (_req, reply) => {

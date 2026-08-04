@@ -1,0 +1,33 @@
+# Zavisnosti i build artefakti
+node_modules
+dist
+coverage
+
+# Git i CI
+.git
+.gitignore
+.github
+
+# Docker
+#Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Okruzenje i tajne
+.env
+.env.*
+
+# Logovi i cache
+*.log
+npm-debug.log*
+.npm
+.eslintcache
+
+# Lokalni upload/storage
+uploads
+
+# Alati i editor
+.claude
+.vscode
+.idea
+.DS_Store

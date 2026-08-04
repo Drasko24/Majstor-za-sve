@@ -49,6 +49,27 @@ export async function providerRoutes(app: FastifyInstance) {
 
     const catId = categoryId ? parseInt(categoryId) : null
 
+    // Labele i kategorija se kombinuju kroz AND — inace bi jedan uslov
+    // pregazio drugi (isti kljuc `labels` u objektu).
+    const labelFilters: Prisma.ProviderProfileWhereInput[] = []
+    if (labelIds.length > 0) {
+      labelFilters.push({
+        labels: { some: { labelId: { in: labelIds }, label: { status: LabelStatus.ACTIVE } } },
+      })
+    }
+    if (catId) {
+      labelFilters.push({
+        labels: {
+          some: {
+            label: {
+              status: LabelStatus.ACTIVE,
+              category: { OR: [{ id: catId }, { parentId: catId }] },
+            },
+          },
+        },
+      })
+    }
+
     const where: Prisma.ProviderProfileWhereInput = {
       ...(q && {
         OR: [
@@ -59,19 +80,7 @@ export async function providerRoutes(app: FastifyInstance) {
       ...(city && { city: { contains: city, mode: 'insensitive' } }),
       ...(minRating && { avgRating: { gte: new Prisma.Decimal(minRating) } }),
       ...(minReviews && { reviewCount: { gte: parseInt(minReviews) } }),
-      ...(labelIds.length > 0 && {
-        labels: { some: { labelId: { in: labelIds }, label: { status: LabelStatus.ACTIVE } } },
-      }),
-      ...(catId && {
-        labels: {
-          some: {
-            label: {
-              status: LabelStatus.ACTIVE,
-              category: { OR: [{ id: catId }, { parentId: catId }] },
-            },
-          },
-        },
-      }),
+      ...(labelFilters.length > 0 && { AND: labelFilters }),
     }
 
     const orderBy: Prisma.ProviderProfileOrderByWithRelationInput =

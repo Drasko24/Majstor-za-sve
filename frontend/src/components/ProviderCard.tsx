@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { MapPin, Star, UserRound } from 'lucide-react'
 import type { ProviderSummary } from '../types'
-import StarRating from './StarRating'
 import { useAuthStore } from '../stores/authStore'
 
 export default function ProviderCard({ provider }: { provider: ProviderSummary }) {
@@ -19,64 +19,92 @@ export default function ProviderCard({ provider }: { provider: ProviderSummary }
     }
   }
 
+  // API salje Decimal kao string ("4.8") iako je tip broj — bez Number() puca toFixed.
+  const rating = Number(avgRating ?? 0)
+
   return (
     <Link
       to={`/providers/${id}`}
-      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
-      <div className="h-36 bg-gray-100 overflow-hidden relative">
+      <div className="relative h-36 overflow-hidden bg-slate-100">
         {coverImage ? (
-          <img src={coverImage} alt={displayName} className="w-full h-full object-cover" />
+          <img
+            src={coverImage}
+            alt={displayName}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
-            👷
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-300">
+            <UserRound className="h-10 w-10" strokeWidth={1.5} />
           </div>
         )}
-        {!isAvailable && (
-          <span className="absolute top-2 right-2 bg-gray-800/70 text-white text-xs px-2 py-0.5 rounded-full">
-            Nedostupan
-          </span>
-        )}
+
+        <span
+          className={`absolute right-2 top-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur ${
+            isAvailable
+              ? 'bg-white/90 text-emerald-700 ring-1 ring-emerald-200'
+              : 'bg-slate-900/70 text-white'
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${isAvailable ? 'bg-emerald-500' : 'bg-slate-300'}`}
+          />
+          {isAvailable ? 'Dostupan' : 'Nedostupan'}
+        </span>
       </div>
 
-      <div className="p-4 flex flex-col gap-2 flex-1">
-        <div>
-          <h3 className="font-semibold text-gray-900 text-base leading-tight">{displayName}</h3>
-          <p className="text-sm text-gray-500">{city}</p>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-semibold leading-tight text-slate-900 transition-colors group-hover:text-blue-700">
+              {displayName}
+            </h3>
+            <p className="mt-1 flex items-center gap-1 text-sm text-slate-500">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="truncate">{city}</span>
+            </p>
+          </div>
+
+          {rating > 0 ? (
+            <span className="flex shrink-0 items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100">
+              <Star className="h-3.5 w-3.5 fill-current" strokeWidth={0} />
+              {rating.toFixed(1)}
+              <span className="font-normal text-amber-600/70">({reviewCount})</span>
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500">
+              Nov
+            </span>
+          )}
         </div>
 
-        {(avgRating ?? 0) > 0 ? (
-          <div className="flex items-center gap-1.5">
-            <StarRating value={avgRating ?? 0} size="sm" />
-            <span className="text-xs text-gray-500">({reviewCount})</span>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400">Bez recenzija</p>
-        )}
-
-        {bio && <p className="text-xs text-gray-600 line-clamp-2">{bio}</p>}
+        {bio && <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{bio}</p>}
 
         {labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-auto pt-1">
+          <div className="mt-auto flex flex-wrap gap-1 pt-1">
             {labels.slice(0, 3).map((l) => (
               <span
                 key={l.id}
-                className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700"
               >
                 {l.name}
               </span>
             ))}
             {labels.length > 3 && (
-              <span className="text-xs text-gray-400">+{labels.length - 3} više</span>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
+                +{labels.length - 3}
+              </span>
             )}
           </div>
         )}
 
         <button
           onClick={handleReviewClick}
-          className="mt-2 w-full text-xs text-blue-600 border border-blue-200 rounded-lg py-1.5 hover:bg-blue-50 transition-colors"
+          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
         >
-          ★ Ostavi recenziju
+          <Star className="h-3.5 w-3.5" />
+          Ostavi recenziju
         </button>
       </div>
     </Link>

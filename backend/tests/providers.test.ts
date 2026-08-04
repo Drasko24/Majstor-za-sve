@@ -82,6 +82,86 @@ describe('majstori', () => {
     })
   })
 
+  describe('GET /api/providers - filter po kategoriji i uslugama', () => {
+    // Kategorija (Stolarija) → podkategorija (Izrada namjestaja) → labela (Kuhinja).
+    async function makeCatalog() {
+      const stolarija = await prisma.category.create({
+        data: { name: 'Stolarija', slug: 'stolarija-test' },
+      })
+      const izrada = await prisma.category.create({
+        data: { name: 'Izrada namjestaja', slug: 'izrada-namjestaja-test', parentId: stolarija.id },
+      })
+      const vodo = await prisma.category.create({
+        data: { name: 'Vodoinstalacije', slug: 'vodoinstalacije-test' },
+      })
+      const sanitarije = await prisma.category.create({
+        data: { name: 'Sanitarije', slug: 'sanitarije-test', parentId: vodo.id },
+      })
+      const kuhinja = await prisma.label.create({
+        data: { name: 'Kuhinja po mjeri', slug: 'kuhinja-test', categoryId: izrada.id, status: 'ACTIVE' },
+      })
+      const slavina = await prisma.label.create({
+        data: { name: 'Popravka slavine', slug: 'slavina-test', categoryId: sanitarije.id, status: 'ACTIVE' },
+      })
+      return { stolarija, vodo, kuhinja, slavina }
+    }
+
+    it('kategorija hvata i labele njenih podkategorija', async () => {
+      const { stolarija, kuhinja } = await makeCatalog()
+      const { profile } = await makeProvider({ displayName: 'Stolar' })
+      await prisma.providerLabel.create({ data: { providerId: profile.id, labelId: kuhinja.id } })
+      await makeProvider({ displayName: 'Neko drugi' })
+
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/providers?categoryId=${stolarija.id}`,
+      })
+
+      expect(res.json().meta.total).toBe(1)
+      expect(res.json().data[0].displayName).toBe('Stolar')
+    })
+
+    // Regresija: `labels` i `categoryId` su pisali isti kljuc u where objektu,
+    // pa je kategorija gazila izbor usluga i vracala pogresne majstore.
+    it('kombinuje labels i categoryId kroz AND', async () => {
+      const { vodo, kuhinja } = await makeCatalog()
+      const { profile } = await makeProvider({ displayName: 'Stolar' })
+      await prisma.providerLabel.create({ data: { providerId: profile.id, labelId: kuhinja.id } })
+
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/providers?categoryId=${vodo.id}&labels=${kuhinja.id}`,
+      })
+
+      // Majstor ima trazenu labelu, ali ne pripada trazenoj kategoriji.
+      expect(res.json().meta.total).toBe(0)
+    })
+  })
+
+  describe('GET /api/labels - filter po kategoriji', () => {
+    it('glavna kategorija vraca labele svojih podkategorija sa parentom', async () => {
+      const stolarija = await prisma.category.create({
+        data: { name: 'Stolarija', slug: 'stolarija-lbl-test' },
+      })
+      const izrada = await prisma.category.create({
+        data: { name: 'Izrada namjestaja', slug: 'izrada-lbl-test', parentId: stolarija.id },
+      })
+      await prisma.label.create({
+        data: { name: 'Kuhinja po mjeri', slug: 'kuhinja-lbl-test', categoryId: izrada.id, status: 'ACTIVE' },
+      })
+
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/labels?categoryId=${stolarija.id}`,
+      })
+
+      const body = res.json()
+      expect(body).toHaveLength(1)
+      expect(body[0].name).toBe('Kuhinja po mjeri')
+      expect(body[0].category.parent).toMatchObject({ id: stolarija.id, name: 'Stolarija' })
+    })
+  })
+
   describe('GET /api/providers/:id - privatnost kontakta', () => {
     it('krije telefon kad je phoneVisible false', async () => {
       const { profile } = await makeProvider({
