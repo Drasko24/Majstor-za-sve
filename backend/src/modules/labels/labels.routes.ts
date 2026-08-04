@@ -17,13 +17,26 @@ export async function labelRoutes(app: FastifyInstance) {
     '/',
     async (request, reply) => {
       const { categoryId, q } = request.query
+      const catId = categoryId ? Number(categoryId) : null
+
       const labels = await prisma.label.findMany({
         where: {
           status: LabelStatus.ACTIVE,
-          ...(categoryId && { categoryId: Number(categoryId) }),
+          // categoryId moze biti podkategorija (tacan pogodak) ili glavna
+          // kategorija — tada vracamo sve labele njenih podkategorija.
+          ...(catId && { category: { OR: [{ id: catId }, { parentId: catId }] } }),
           ...(q && { name: { contains: q, mode: 'insensitive' } }),
         },
-        include: { category: { select: { id: true, name: true, slug: true } } },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              parent: { select: { id: true, name: true, slug: true } },
+            },
+          },
+        },
         orderBy: { name: 'asc' },
       })
       return reply.send(labels)

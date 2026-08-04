@@ -33,8 +33,8 @@ export default function ProviderProfile() {
   const submitReview = useMutation({
     mutationFn: () => reviewsApi.create(id!, { rating, comment: comment || undefined }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews', id] })
-      queryClient.invalidateQueries({ queryKey: ['provider', id] })
+      void queryClient.invalidateQueries({ queryKey: ['reviews', id] })
+      void queryClient.invalidateQueries({ queryKey: ['provider', id] })
       setComment('')
       setRating(5)
     },
@@ -91,7 +91,7 @@ export default function ProviderProfile() {
                 )}
               </div>
 
-              {(profile.avgRating ?? 0) > 0 && (
+              {Number(profile.avgRating ?? 0) > 0 && (
                 <div className="flex items-center gap-2 mt-2">
                   <StarRating value={profile.avgRating ?? 0} />
                   <span className="text-sm text-gray-500">

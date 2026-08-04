@@ -61,7 +61,7 @@ export async function authRoutes(app: FastifyInstance) {
 
       const passwordHash = await bcrypt.hash(password, 10)
       const user = await prisma.user.create({
-        data: { email, passwordHash, role: role as Role },
+        data: { email, passwordHash, role },
       })
 
       if (role === 'PROVIDER' && displayName && city) {
@@ -114,7 +114,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     let payload: { userId: string; role: Role; type: string }
     try {
-      payload = app.jwt.verify(token) as typeof payload
+      payload = app.jwt.verify(token)
     } catch {
       return sendError(reply, 401, 'Nevažeći refresh token')
     }

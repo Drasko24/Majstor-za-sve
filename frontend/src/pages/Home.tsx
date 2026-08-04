@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { categoriesApi } from '../api/categories'
 import Layout from '../components/Layout'
@@ -63,13 +63,21 @@ export default function Home() {
               Traži
             </button>
           </form>
+
+          <p className="text-blue-200 text-sm mt-6">
+            Ne znate koga da tražite?{' '}
+            <Link to="/requests/new" className="text-white font-semibold underline underline-offset-4">
+              Opišite šta vam treba
+            </Link>{' '}
+            i majstori će se javiti sami.
+          </p>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="max-w-6xl mx-auto px-4 py-12">
+      <section className="container-page py-12">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Kategorije usluga</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-3">
           {categories.map((cat) => (
             <button
               key={cat.id}

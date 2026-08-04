@@ -1,0 +1,145 @@
+name: Build and Push
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-ci:
+    uses: ./.github/workflows/backend-ci.yml
+
+  frontend-ci:
+    uses: ./.github/workflows/frontend-ci.yml
+
+  build:
+    needs: [backend-ci, frontend-ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prijava na GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ime repoa malim slovima
+        id: repo
+        run: echo "value=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Metapodaci i tagovi
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.repo.outputs.value }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-,format=long
+
+      - name: Build i push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          target: production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, petar_docker.local.2bi]        # labela tvog runnera
+    environment:
+      name: staging
+
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+
+    env:
+      ENV_FILE: /var/majstor/config/env.conf
+      COMPOSE_PROJECT: majstor-staging
+      TAG: sha-${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ime repoa malim slovima
+        id: repo
+        run: echo "value=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Povuci imidže
+        env:
+          GHCR_NAMESPACE: ${{ steps.repo.outputs.value }}
+        run: |
+          docker compose -p "$COMPOSE_PROJECT" --env-file "$ENV_FILE" \
+            -f docker-compose.staging.yml pull
+
+      - name: Backup baze
+        run: |
+          set -o pipefail
+          mkdir -p /var/majstor/backups
+          BACKUP="/var/majstor/backups/staging-$(date +%Y%m%d-%H%M%S).sql.gz"
+          if docker compose -p "$COMPOSE_PROJECT" --env-file "$ENV_FILE" \
+               -f docker-compose.staging.yml exec -T db \
+               pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > "$BACKUP"; then
+            [ -s "$BACKUP" ] || { echo "Backup je prazan"; exit 1; }
+            echo "Backup: $BACKUP"
+          else
+            rm -f "$BACKUP"
+            echo "UPOZORENJE: backup preskočen (prvi deploy?)"
+          fi
+
+      - name: Migracije
+        env:
+          GHCR_NAMESPACE: ${{ steps.repo.outputs.value }}
+        run: |
+          docker compose -p "$COMPOSE_PROJECT" --env-file "$ENV_FILE" \
+            -f docker-compose.staging.yml run --rm backend npm run db:deploy
+
+      - name: Deploy
+        env:
+          GHCR_NAMESPACE: ${{ steps.repo.outputs.value }}
+        run: |
+          docker compose -p "$COMPOSE_PROJECT" --env-file "$ENV_FILE" \
+            -f docker-compose.staging.yml up -d --remove-orphans
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/health > /dev/null; then
+              echo "Aplikacija je zdrava"
+              exit 0
+            fi
+            echo "Čekam... ($i/30)"
+            sleep 2
+          done
+          echo "Health check nije prošao"
+          docker compose -p "$COMPOSE_PROJECT" --env-file "$ENV_FILE" \
+            -f docker-compose.staging.yml logs --tail=100 backend
+          exit 1
+
+      - name: Čišćenje
+        if: always()
+        run: |
+          docker image prune -f --filter "until=168h" || true
+          docker builder prune -f --filter "until=168h" || true

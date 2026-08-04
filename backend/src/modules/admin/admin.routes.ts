@@ -184,15 +184,19 @@ export async function adminRoutes(app: FastifyInstance) {
     const [users, providers, labelsByStatus, reviews] = await prisma.$transaction([
       prisma.user.count(),
       prisma.providerProfile.count(),
-      prisma.label.groupBy({ by: ['status'], _count: { id: true } }),
+      prisma.label.groupBy({ by: ['status'], _count: { id: true }, orderBy: { status: 'asc' } }),
       prisma.review.count(),
     ])
+
+    // Prisma gubi precizan tip za groupBy unutar $transaction niza (literal `by`
+    // se prosiri na cijeli enum), pa oblik navodimo eksplicitno. Runtime je isti.
+    const counts = labelsByStatus as { status: LabelStatus; _count: { id: number } }[]
 
     return reply.send({
       totalUsers: users,
       totalProviders: providers,
       totalReviews: reviews,
-      labels: Object.fromEntries(labelsByStatus.map((l) => [l.status, l._count.id])),
+      labels: Object.fromEntries(counts.map((l) => [l.status, l._count.id])),
     })
   })
 }

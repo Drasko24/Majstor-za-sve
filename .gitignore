@@ -1,3 +1,7 @@
 node_modules/
 .env
 *.log
+staging.env
+!staging.env.example
+dist/
+.claude/

@@ -19,7 +19,7 @@ export default function Admin() {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="container-page py-8">
         <div className="flex items-center gap-3 mb-6">
           <span className="text-2xl">🛡️</span>
           <div>
@@ -153,7 +153,7 @@ function LabelsTab() {
   const reject = useMutation({
     mutationFn: ({ id, note }: { id: number; note: string }) => adminApi.rejectLabel(id, note || undefined),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
+      void qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
       resetExpansion()
     },
   })
@@ -162,7 +162,7 @@ function LabelsTab() {
     mutationFn: ({ id, targetId }: { id: number; targetId: number }) =>
       adminApi.mergeLabel(id, targetId, note || undefined),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
+      void qc.invalidateQueries({ queryKey: ['admin-pending-labels'] })
       resetExpansion()
     },
   })
@@ -199,7 +199,7 @@ function LabelsTab() {
           onRejectConfirm={() => reject.mutate({ id: label.id, note })}
           onMergeConfirm={() => {
             if (!mergeTargetId) return alert('Odaberi ciljnu labelu')
-            merge.mutate({ id: label.id, targetId: mergeTargetId as number })
+            merge.mutate({ id: label.id, targetId: mergeTargetId })
           }}
           onCancel={resetExpansion}
           approving={approve.isPending}
@@ -437,7 +437,7 @@ function ProviderRow({ provider, onSuspend, suspending }: { provider: AdminProvi
         <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-400">
           <span>📍 {provider.city}</span>
           <span>✉ {provider.user.email}</span>
-          {(provider.avgRating ?? 0) > 0 && (
+          {Number(provider.avgRating ?? 0) > 0 && (
             <span className="flex items-center gap-1">
               <StarRating value={provider.avgRating ?? 0} size="sm" />
               ({provider.reviewCount})

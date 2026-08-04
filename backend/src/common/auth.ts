@@ -9,6 +9,21 @@ declare module '@fastify/jwt' {
   }
 }
 
+/**
+ * Za javne rute kojima identitet mijenja odgovor (npr. vlasnik oglasa vidi
+ * kontakt podatke). Nikad ne odbija zahtjev - samo popuni req.user ako token
+ * postoji i ispravan je.
+ */
+export async function optionalAuth(req: FastifyRequest) {
+  try {
+    await req.jwtVerify()
+    if (req.user.type !== 'access') return null
+    return req.user
+  } catch {
+    return null
+  }
+}
+
 export function requireAuth(...roles: Role[]) {
   return async (req: FastifyRequest, reply: FastifyReply) => {
     try {

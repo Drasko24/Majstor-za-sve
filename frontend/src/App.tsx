@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { setupApiAuth } from './api/client'
 import { authApi } from './api/auth'
 import { useAuthStore } from './stores/authStore'
+import ErrorBoundary from './components/ErrorBoundary'
 
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -12,6 +13,12 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
+import Info from './pages/Info'
+import Requests from './pages/Requests'
+import RequestDetail from './pages/RequestDetail'
+import RequestNew from './pages/RequestNew'
+import RequestEdit from './pages/RequestEdit'
+import MyRequests from './pages/MyRequests'
 
 // Wire up auth interceptor once, at module level
 setupApiAuth(
@@ -43,7 +50,7 @@ export default function App() {
         setInitialized(true)
       }
     }
-    init()
+    void init()
   }, [login, setInitialized])
 
   if (!initialized) {
@@ -55,15 +62,23 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/providers/:id" element={<ProviderProfile />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/providers/:id" element={<ProviderProfile />} />
+        <Route path="/requests" element={<Requests />} />
+        <Route path="/requests/new" element={<RequestNew />} />
+        <Route path="/requests/:id" element={<RequestDetail />} />
+        <Route path="/requests/:id/edit" element={<RequestEdit />} />
+        <Route path="/my-requests" element={<MyRequests />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/info" element={<Info />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ErrorBoundary>
   )
 }
