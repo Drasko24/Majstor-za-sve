@@ -397,7 +397,7 @@ export default function RequestDetail() {
                               {o.provider.displayName}
                             </Link>
                             <p className="text-xs text-gray-500">{o.provider.city}</p>
-                            {(o.provider.avgRating ?? 0) > 0 && (
+                            {Number(o.provider.avgRating ?? 0) > 0 && (
                               <div className="flex items-center gap-1.5 mt-1">
                                 <StarRating value={Number(o.provider.avgRating)} size="sm" />
                                 <span className="text-xs text-gray-500">

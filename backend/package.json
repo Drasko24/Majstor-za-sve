@@ -14,6 +14,7 @@
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:requests": "tsx prisma/seed-requests.ts",
+    "db:sync:catalog": "tsx prisma/sync-catalog.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {

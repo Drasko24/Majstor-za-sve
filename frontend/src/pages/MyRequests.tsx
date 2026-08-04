@@ -32,7 +32,7 @@ export default function MyRequests() {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="container-page py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Moja oglasna tabla</h1>
           <Link
@@ -66,7 +66,7 @@ export default function MyRequests() {
 
         {tab === 'requests' ? (
           isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="h-64 bg-gray-100 rounded-xl animate-pulse" />
               ))}
@@ -84,7 +84,7 @@ export default function MyRequests() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {data.data.map((r) => (
                   <RequestCard key={r.id} request={r} showStatus />
                 ))}

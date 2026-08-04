@@ -24,7 +24,8 @@ export interface AdminProvider {
   displayName: string
   city: string
   isAvailable: boolean
-  avgRating?: number | null
+  /** Prisma Decimal stize kao string ("4.8") — vidi ProviderSummary. */
+  avgRating?: number | string | null
   reviewCount: number
   createdAt: string
   user: { email: string }

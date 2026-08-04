@@ -17,7 +17,13 @@ export interface Label {
   name: string
   slug: string
   description?: string
-  category?: { id: number; name: string }
+  /** Podkategorija kojoj labela pripada; `parent` je glavna kategorija. */
+  category?: {
+    id: number
+    name: string
+    slug?: string
+    parent?: { id: number; name: string; slug: string } | null
+  }
 }
 
 export interface LabelSuggestion {
@@ -34,7 +40,11 @@ export interface ProviderSummary {
   municipality?: string
   bio?: string
   yearsExperience?: number
-  avgRating?: number | null
+  /**
+   * Prisma Decimal se serijalizuje kao string ("4.8"), isto kao budgetMin/Max.
+   * Zato uvijek kroz Number() prije racunanja ili toFixed().
+   */
+  avgRating?: number | string | null
   reviewCount: number
   isAvailable: boolean
   labels: Label[]
@@ -122,7 +132,7 @@ export interface OfferWithProvider extends Offer {
     id: string
     displayName: string
     city: string
-    avgRating?: number | null
+    avgRating?: number | string | null
     reviewCount: number
     phone: string | null
     phoneVisible: boolean

@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { setupApiAuth } from './api/client'
 import { authApi } from './api/auth'
 import { useAuthStore } from './stores/authStore'
+import ErrorBoundary from './components/ErrorBoundary'
 
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -61,21 +62,23 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/providers/:id" element={<ProviderProfile />} />
-      <Route path="/requests" element={<Requests />} />
-      <Route path="/requests/new" element={<RequestNew />} />
-      <Route path="/requests/:id" element={<RequestDetail />} />
-      <Route path="/requests/:id/edit" element={<RequestEdit />} />
-      <Route path="/my-requests" element={<MyRequests />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/info" element={<Info />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/providers/:id" element={<ProviderProfile />} />
+        <Route path="/requests" element={<Requests />} />
+        <Route path="/requests/new" element={<RequestNew />} />
+        <Route path="/requests/:id" element={<RequestDetail />} />
+        <Route path="/requests/:id/edit" element={<RequestEdit />} />
+        <Route path="/my-requests" element={<MyRequests />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/info" element={<Info />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ErrorBoundary>
   )
 }

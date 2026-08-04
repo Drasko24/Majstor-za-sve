@@ -1,3 +1,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /*
+   * Jedinstvena sirina sadrzaja. Na velikim monitorima sadrzaj nastavlja da
+   * raste umjesto da stane na 1152px i ostavi pola ekrana prazno.
+   */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 xl:max-w-7xl 2xl:max-w-[1560px];
+  }
+}
+
+@layer utilities {
+  /* Ulaz padajucih menija — kratko i suzdrzano. */
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .animate-menu-in {
+    animation: menu-in 0.14s ease-out;
+  }
+
+  /* Fioka sa filterima na telefonu. */
+  @keyframes sheet-up {
+    from {
+      transform: translateY(12%);
+      opacity: 0.6;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  .animate-sheet-up {
+    animation: sheet-up 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-menu-in,
+    .animate-sheet-up {
+      animation: none;
+    }
+  }
+}

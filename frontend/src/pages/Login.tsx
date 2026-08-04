@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Lock, Mail } from 'lucide-react'
 import { authApi } from '../api/auth'
 import { useAuthStore } from '../stores/authStore'
-import Layout from '../components/Layout'
+import AuthShell, { AuthError, AuthSubmit, authLinkClass } from '../components/AuthShell'
+import AuthField from '../components/AuthField'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -32,56 +34,51 @@ export default function Login() {
   }
 
   return (
-    <Layout>
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Prijava</h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Nemate nalog?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Registrujte se
-            </Link>
-          </p>
+    <AuthShell
+      title="Prijava"
+      subtitle={
+        <>
+          Nemate nalog?{' '}
+          <Link to="/register" className={authLinkClass}>
+            Registrujte se
+          </Link>
+        </>
+      }
+      asideTitle="Dobro došli nazad."
+      asideText="Prijavite se i nastavite tamo gdje ste stali — vaši zahtjevi i poruke vas čekaju."
+      bullets={[
+        'Pratite ponude na svoje zahtjeve',
+        'Sačuvani majstori i istorija poslova',
+        'Bez provizije, bez skrivenih troškova',
+      ]}
+    >
+      {error && <AuthError message={error} />}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">
-              {error}
-            </div>
-          )}
+      <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+        <AuthField
+          label="Email"
+          icon={Mail}
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="vas@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+        <AuthField
+          label="Lozinka"
+          icon={Lock}
+          type="password"
+          required
+          autoComplete="current-password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Lozinka</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 mt-2"
-            >
-              {loading ? 'Prijavljivanje...' : 'Prijavi se'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </Layout>
+        <AuthSubmit loading={loading} label="Prijavi se" loadingLabel="Prijavljivanje..." />
+      </form>
+    </AuthShell>
   )
 }

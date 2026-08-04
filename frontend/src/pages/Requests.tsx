@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import {
+  Inbox,
+  LayoutGrid,
+  MapPin,
+  Plus,
+  Search as SearchIcon,
+  ShoppingCart,
+  Wrench,
+} from 'lucide-react'
 import { requestsApi } from '../api/requests'
 import { categoriesApi } from '../api/categories'
 import { useAuthStore } from '../stores/authStore'
@@ -11,11 +20,14 @@ import type { RequestType } from '../types'
 
 type TypeTab = 'ALL' | RequestType
 
-const tabs: { value: TypeTab; label: string }[] = [
-  { value: 'ALL', label: 'Sve' },
-  { value: 'SERVICE', label: '🛠️ Poslovi' },
-  { value: 'PURCHASE', label: '🛒 Kupovina' },
+const tabs: { value: TypeTab; label: string; icon: typeof LayoutGrid }[] = [
+  { value: 'ALL', label: 'Sve', icon: LayoutGrid },
+  { value: 'SERVICE', label: 'Poslovi', icon: Wrench },
+  { value: 'PURCHASE', label: 'Kupovina', icon: ShoppingCart },
 ]
+
+const selectClass =
+  'rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-8 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/15'
 
 export default function Requests() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -24,6 +36,7 @@ export default function Requests() {
   const [type, setType] = useState<TypeTab>((searchParams.get('type') as TypeTab) ?? 'ALL')
   const [inputQ, setInputQ] = useState(searchParams.get('q') ?? '')
   const [q, setQ] = useState(searchParams.get('q') ?? '')
+  const [inputCity, setInputCity] = useState(searchParams.get('city') ?? '')
   const [city, setCity] = useState(searchParams.get('city') ?? '')
   const [categoryId, setCategoryId] = useState<number | ''>(
     searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : ''
@@ -72,90 +85,115 @@ export default function Requests() {
     setPage(1)
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    setQ(inputQ)
+    setCity(inputCity)
+    setPage(1)
+  }
+
+  const hasResults = !!data && data.data.length > 0
+
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Zaglavlje */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Zahtjevi klijenata</h1>
-            <p className="text-sm text-gray-500">
-              Ljudi opisuju šta im treba — majstori i prodavci šalju ponude.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {user && (
+      {/* Zaglavlje sa pretragom */}
+      <div className="border-b border-slate-200/70 bg-white">
+        <div className="container-page py-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                Zahtjevi klijenata
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Ljudi opisuju šta im treba — majstori i prodavci šalju ponude.
+              </p>
+            </div>
+
+            <div className="flex shrink-0 gap-2">
+              {user && (
+                <Link
+                  to="/my-requests"
+                  className="whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                >
+                  Moji zahtjevi
+                </Link>
+              )}
               <Link
-                to="/my-requests"
-                className="border border-gray-200 bg-white text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap"
+                to="/requests/new"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-md active:translate-y-px"
               >
-                Moji zahtjevi
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
+                Objavi zahtjev
               </Link>
-            )}
-            <Link
-              to="/requests/new"
-              className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 whitespace-nowrap"
-            >
-              + Objavi zahtjev
-            </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Tabovi po tipu */}
-        <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-4 bg-white w-full sm:w-auto sm:inline-flex">
-          {tabs.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => resetPage(setType)(t.value)}
-              className={`flex-1 sm:flex-none px-5 py-2.5 text-sm font-medium transition-colors ${
-                type === t.value ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Filteri */}
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
           <form
-            className="md:col-span-2 flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault()
-              setQ(inputQ)
-              setPage(1)
-            }}
+            onSubmit={handleSearch}
+            className="mt-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5 sm:flex-row sm:items-center sm:gap-0"
           >
-            <input
-              type="text"
-              placeholder="Šta tražite? (npr. kuhinja, crijep, macbook)"
-              value={inputQ}
-              onChange={(e) => setInputQ(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Šta tražite? npr. kuhinja, crijep, macbook"
+                value={inputQ}
+                onChange={(e) => setInputQ(e.target.value)}
+                aria-label="Pojam pretrage"
+                className="peer w-full rounded-xl border-0 bg-transparent py-2.5 pl-10 pr-3 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              />
+              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 transition-colors peer-focus:text-blue-500" />
+            </div>
+
+            <div className="hidden h-7 w-px bg-slate-200 sm:block" />
+
+            <div className="relative sm:w-52">
+              <input
+                type="text"
+                placeholder="Grad"
+                value={inputCity}
+                onChange={(e) => setInputCity(e.target.value)}
+                aria-label="Grad"
+                className="peer w-full rounded-xl border-0 bg-transparent py-2.5 pl-10 pr-3 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              />
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400 transition-colors peer-focus:text-blue-500" />
+            </div>
+
             <button
               type="submit"
-              className="bg-gray-900 text-white px-4 rounded-lg text-sm font-medium hover:bg-gray-800"
+              className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:py-2.5"
             >
               Traži
             </button>
           </form>
+        </div>
+      </div>
 
-          <input
-            type="text"
-            placeholder="Grad"
-            value={city}
-            onChange={(e) => resetPage(setCity)(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <div className="container-page py-6">
+        {/* Tip zahtjeva, kategorija i sortiranje */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-50/60 p-1">
+            {tabs.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                onClick={() => resetPage(setType)(value)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  type === value
+                    ? 'bg-white font-semibold text-blue-700 shadow-sm ring-1 ring-slate-200/70'
+                    : 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
+                }`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={2} />
+                {label}
+              </button>
+            ))}
+          </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <select
               value={categoryId}
-              onChange={(e) =>
-                resetPage(setCategoryId)(e.target.value ? Number(e.target.value) : '')
-              }
-              className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => resetPage(setCategoryId)(e.target.value ? Number(e.target.value) : '')}
+              aria-label="Kategorija"
+              className={`${selectClass} max-w-[220px]`}
             >
               <option value="">Sve kategorije</option>
               {categories.map((c) => (
@@ -169,41 +207,63 @@ export default function Requests() {
               ))}
             </select>
 
-            <select
-              value={sort}
-              onChange={(e) => resetPage(setSort)(e.target.value as 'newest' | 'budget' | 'offers')}
-              className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Sortiranje"
-            >
-              <option value="newest">Najnoviji</option>
-              <option value="budget">Budžet</option>
-              <option value="offers">Ponude</option>
-            </select>
+            <label className="flex items-center gap-2 text-sm text-slate-500">
+              Sortiraj:
+              <select
+                value={sort}
+                onChange={(e) =>
+                  resetPage(setSort)(e.target.value as 'newest' | 'budget' | 'offers')
+                }
+                className={selectClass}
+              >
+                <option value="newest">Najnoviji</option>
+                <option value="budget">Budžet</option>
+                <option value="offers">Ponude</option>
+              </select>
+            </label>
           </div>
         </div>
 
         {/* Rezultati */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-64 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white">
+                <div className="h-36 animate-pulse bg-slate-100" />
+                <div className="flex flex-col gap-2.5 p-4">
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-full animate-pulse rounded bg-slate-100" />
+                  <div className="mt-2 h-6 w-1/2 animate-pulse rounded-full bg-slate-100" />
+                </div>
+              </div>
             ))}
           </div>
-        ) : !data || data.data.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-dashed border-gray-200 rounded-xl">
-            <p className="text-4xl mb-2">📭</p>
-            <p className="text-gray-500">Nema zahtjeva koji odgovaraju pretrazi.</p>
+        ) : !hasResults ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+              <Inbox className="h-7 w-7" />
+            </span>
+            <h2 className="mt-4 text-base font-semibold text-slate-900">Nema zahtjeva</h2>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+              Nijedan zahtjev ne odgovara ovoj pretrazi. Promijenite filtere ili objavite svoj
+              zahtjev.
+            </p>
             <Link
               to="/requests/new"
-              className="inline-block mt-4 text-sm text-blue-600 font-medium hover:underline"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-colors hover:bg-blue-700"
             >
-              Objavite prvi zahtjev →
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              Objavi zahtjev
             </Link>
           </div>
         ) : (
           <>
-            <p className="text-sm text-gray-500 mb-4">{data.meta.total} zahtjeva</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p className="mb-4 text-sm text-slate-500">
+              <span className="font-semibold text-slate-900">{data.meta.total}</span>{' '}
+              {data.meta.total === 1 ? 'zahtjev' : 'zahtjeva'}
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {data.data.map((r) => (
                 <RequestCard key={r.id} request={r} />
               ))}
